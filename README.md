@@ -1,2 +1,1 @@
-# disco-model
-Diffusion-free Score Matching for Exact Conditional Sampling
+# Diffusion-free Score Matching for Exact Conditional Sampling

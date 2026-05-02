@@ -1,5 +1,7 @@
 # Low Dimensional DISCO Experiments
 
+This code repository is heavily based on [https://github.com/yang-song/score_sde](https://github.com/yang-song/score_sde).
+
 To reproduce Table 1, train one DISCO model for each of the three datasets (Moons, Checkerboard, Rings) by running
 
 ```bash

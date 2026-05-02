@@ -222,11 +222,6 @@ def sample(
 
         neg_energy_fn = None
 
-        # neg_energy_fn = get_smc_sampler(config, sde, score_model,
-        #                               state, shape, rng, cond_indices, cond_values,
-        #                               num_integration_steps, num_mcmc_steps,
-        #                               step_size, disco=hmc_disco, get_just_energy=True)
-
     pstate = flax_utils.replicate(state)
     rng, *sample_rng = jax.random.split(rng, jax.local_device_count() + 1)
     sample_rng = jnp.asarray(sample_rng)
@@ -308,11 +303,6 @@ def get_hmc_sampler(
             )
 
     rng, rng_key = jax.random.split(rng)
-    # warmup_init = init_gen(rng_key)
-    # warmup = blackjax.window_adaptation(blackjax.nuts, neg_energy_fn)
-    # (state, params), _ = warmup.run(rng_key, warmup_init, num_steps=num_warmup_steps)
-    # nuts = blackjax.nuts(neg_energy_fn, **params)
-    # print(params)
     nuts = blackjax.nuts(
         neg_energy_fn, step_size=1.0, inverse_mass_matrix=jnp.ones(shape[1])
     )
@@ -461,30 +451,10 @@ def get_smc_sampler(
         num_mcmc_steps=num_mcmc_steps,
     )
 
-    # tempered = blackjax.tempered_smc(
-    #     lambda x: 0,  # prior is (unnormalized) uniform
-    #     neg_energy_fn,
-    #     blackjax.hmc.build_kernel(),
-    #     blackjax.hmc.init,
-    #     extend_params(hmc_parameters),
-    #     resampling.systematic,  # lambda rng_key, w, n: jnp.arange(n)
-    #     num_mcmc_steps=num_mcmc_steps,
-    # )
-
     def smc_sampler(rng_key, pstate):
         rng_key, init_key, sample_key = jax.random.split(rng_key, 3)
-        # init points are sampled from N(0, sigma_max^2)
-        # initial_smc_state = jax.random.multivariate_normal(
-        #     init_key,
-        #     jnp.zeros([shape[1]]),
-        #     jnp.eye(shape[1]) * config.model.sigma_max**2,
-        #     (num_samples,),
-        # )
-
         # Set initial_smc_state to be uniform in the hypercube around 0, with length 4*sigma_max
         sigma_max = config.model.sigma_max
-        # low = -2.5  # * sigma_max
-        # high = 2.5  # * sigma_max
         low = -2.5  # * sigma_max
         high = 2.5  # * sigma_max
         initial_smc_state = jax.random.uniform(
@@ -515,16 +485,9 @@ def smc_inference_loop(rng_key, smc_kernel, initial_state):
         i, state, k = carry
         k, subk = jax.random.split(k, 2)
         state, _ = smc_kernel(subk, state)
-        # increase lambda
-        # r = 1.1
-        # num_steps = 100
-        # alpha = (r - 1.0) / (r**num_steps - 1.0)
-        # state, _ = smc_kernel(subk, state, state.lmbda * r + alpha)
-        # state, _ = smc_kernel(subk, state, state.lmbda + 0.01)
 
-        # compute ess
-        ess = blackjax.smc.ess.ess(jnp.log(state.weights))
-
+        # compute ess and print
+        # ess = blackjax.smc.ess.ess(jnp.log(state.weights))
         # jax.debug.print(
         #     "i: {i}, lmbda: {lmbda}, ess: {ess}",
         #     i=i,
@@ -601,16 +564,6 @@ def plot_2d_samples(
     plt.legend()
     plt.grid(True)
     plt.show()
-
-
-# def conditional_sampling_experiment(config, sde, score_model, state, sampling_eps, model_dir: Path,
-#                                    means, covs, weights,
-#                                    sampling_shape=(1024*4, 2), heuristic_cond_sampling=False,
-#                                    show_sliced_joint_samples=False, joint_sample_shape=(1024*20, 2),
-#                                    x1_values=jnp.linspace(-4, 4, 9), sliced_joint_eps=0.1,
-#                                    hmc=False, num_integration_steps=10, num_mcmc_steps=1, step_size=1e-2,
-#                                    hmc_disco=True, guidance_alpha=0.0, compute_w1_dist=False, noplot=False,
-#                                    joint_samples=None, store_intermediate_samples=False) -> None:
 
 
 def plot_conditional_distributions(

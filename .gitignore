@@ -4,6 +4,19 @@ checkpoints-meta
 samples
 tensorboard
 
+npz_output
+downloads
+__pycache__
+wandb
+data
+datasets
+training-runs
+fid-refs
+fid-tmp*
+out
+# Ignore all .pyc files
+**/*.pyc
+
 *.npz
 
 # Byte-compiled / optimized / DLL files

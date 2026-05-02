@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --partition=iml
+#SBATCH --partition=PARTITION_NAME
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
